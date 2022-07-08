@@ -43,7 +43,8 @@ static void signal_handler(int sig)
  * special realtime thread once for each audio cycle.
  *
  * This client follows a simple rule: when the JACK transport is
- * running, copy the input port to the output.  When it stops, exit.
+ * running, write nframes sine wave samples to the two outputs ports.
+ * When it stops, exit.
  */
 
 int
@@ -106,6 +107,8 @@ main (int argc, char *argv[])
 		}
 	}
 
+	/* create a sine wave data */
+
 	for( i=0; i<TABLE_SIZE; i++ )
 	{
 		data.sine[i] = 0.2 * (float) sin( ((double)i/(double)TABLE_SIZE) * M_PI * 2. );
@@ -145,7 +148,7 @@ main (int argc, char *argv[])
 
 	jack_on_shutdown (client, jack_shutdown, 0);
 
-	/* create two ports */
+	/* create two output ports */
 
 	output_port1 = jack_port_register (client, "output1",
 					  JACK_DEFAULT_AUDIO_TYPE,
@@ -156,7 +159,7 @@ main (int argc, char *argv[])
 					  JackPortIsOutput, 0);
 
 	if ((output_port1 == NULL) || (output_port2 == NULL)) {
-		fprintf(stderr, "no more JACK ports available\n");
+		fprintf(stderr, "no more JACK output ports available\n");
 		exit (1);
 	}
 
